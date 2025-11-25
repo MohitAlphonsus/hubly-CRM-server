@@ -73,3 +73,25 @@ export async function getMessages(req, res) {
     res.status(500).json({ message: "Internal server error", success: false });
   }
 }
+
+export async function getUserMessages(req, res) {
+  try {
+    const { sessionToken } = req.query;
+
+    if (!sessionToken) {
+      return res.status(400).json({ message: "Session token is required", success: false });
+    }
+
+    const user = await User.findOne({ sessionToken });
+    if (!user) {
+      return res.status(404).json({ message: "User not found", success: false });
+    }
+    const messages = await Message.find({ userId: user._id }).sort({ createdAt: -1 }).populate("fromTeamMember", "firstName role").populate("assignedTo", "firstName role");
+
+
+    res.status(200).json({ messages, success: true });
+  } catch (err) {
+    console.log(`Error in Get User Messages ${err}`);
+    res.status(500).json({ message: "Internal server error", success: false });
+  }
+}
