@@ -22,7 +22,6 @@ export async function signup(req, res) {
 
 		const role = isPrimaryMessageReciever ? "admin" : "team-member";
 
-
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -32,7 +31,7 @@ export async function signup(req, res) {
 			email,
 			password: hashedPassword,
 			isPrimaryMessageReciever,
-			role
+			role,
 		});
 
 		await teamMember.save();
@@ -77,6 +76,103 @@ export async function login(req, res) {
 			teamMember,
 		});
 	} catch (err) {
+		res.status(500).json({ message: "Internal server error", success: false });
+	}
+}
+
+// team add, delete, update, get
+export async function addTeamMember(req, res) {
+	try {
+		const { firstName, lastName, email, password, role } = req.body;
+		if (!firstName || !lastName || !email || !password) {
+			return res
+				.status(400)
+				.json({ message: "All fields are required", success: false });
+		}
+
+		const doesTeamMemberExist = await TeamMember.findOne({ email });
+		if (doesTeamMemberExist) {
+			return res.status(400).json({
+				message: "Team member with email already exists",
+				success: false,
+			});
+		}
+
+		const salt = await bcrypt.genSalt(10);
+		const hashedPassword = await bcrypt.hash(password, salt);
+
+		const teamMember = new TeamMember({
+			firstName,
+			lastName,
+			email,
+			password: hashedPassword,
+			role,
+		});
+
+		await teamMember.save();
+		res.status(201).json({ message: "Team member added successfully" });
+	} catch (err) {
+		console.log(`Error in Add Team Member ${err}`);
+		res.status(500).json({ message: "Internal server error", success: false });
+	}
+}
+
+export async function deleteTeamMember(req, res) {
+	try {
+		const { id } = req.params;
+		const teamMember = await TeamMember.findByIdAndDelete({ _id: id });
+		if (!teamMember) {
+			return res
+				.status(404)
+				.json({ message: "Team member not found", success: false });
+		}
+		await teamMember.deleteOne();
+		res.status(200).json({ message: "Team member deleted successfully" });
+	} catch (err) {
+		console.log(`Error in Delete Team Member ${err}`);
+		res.status(500).json({ message: "Internal server error", success: false });
+	}
+}
+
+export async function editAndUpdateTeamMember(req, res) {
+	try {
+		const { id } = req.params;
+		const { firstName, lastName, email, password, role } = req.body;
+
+		const updateTeamMember = await TeamMember.findByIdAndUpdate(
+			{ _id: id },
+			{
+				firstName,
+				lastName,
+				email,
+				password,
+				role,
+			},
+			{ new: true }
+		);
+
+		if (!updateTeamMember) {
+			return res
+				.status(404)
+				.json({ message: "Team member not found", success: false });
+		}
+		res.status(200).json({
+			message: "Team member updated successfully",
+			success: true,
+			updateTeamMember,
+		});
+	} catch (err) {
+		console.log(`Error in Edit and Update Team Member ${err}`);
+		res.status(500).json({ message: "Internal server error", success: false });
+	}
+}
+
+export async function getAllTeamMembers(req, res) {
+	try {
+		const teamMembers = await TeamMember.find().select("-password");
+		res.status(200).json({ teamMembers, success: true });
+	} catch (err) {
+		console.log(`Error in Get All Team Members ${err}`);
 		res.status(500).json({ message: "Internal server error", success: false });
 	}
 }
