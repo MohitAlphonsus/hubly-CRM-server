@@ -1,9 +1,18 @@
-import express from 'express'
-const userRouter = express.Router()
+import express from "express";
+const userRouter = express.Router();
 
-import { startChat, getUserBySession } from '../controllers/user.controller.js'
+import {
+	startChat,
+	getUserBySession,
+	getUsers,
+	getUserById,
+} from "../controllers/user.controller.js";
 
-userRouter.post('/chat', startChat)
-userRouter.get('/session/:sessionToken', getUserBySession)
+import { protectRoute } from "../middlewares/auth.middleware.js";
 
-export default userRouter
+userRouter.post("/chat", startChat);
+userRouter.get("/session/:sessionToken", getUserBySession);
+userRouter.get("/all", protectRoute, getUsers);
+userRouter.get("/:id", protectRoute, getUserById);
+
+export default userRouter;
