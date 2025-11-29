@@ -5,12 +5,15 @@ export async function getBotSettings(req, res) {
 		let botSettings = await BotSettings.findOne();
 
 		if (!botSettings) {
-			botSettings = new BotSettings({});
-			await botSettings.save();
+			botSettings = await BotSettings.create({});
 		}
+
+		return res.status(200).json({ botSettings, success: true });
 	} catch (err) {
 		console.log(`Error in Get Bot Settings ${err}`);
-		res.status(500).json({ message: "Internal server error", success: false });
+		return res
+			.status(500)
+			.json({ message: "Internal server error", success: false });
 	}
 }
 
