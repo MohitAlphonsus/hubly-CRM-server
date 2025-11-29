@@ -8,6 +8,7 @@ import {
 	deleteTeamMember,
 	editAndUpdateTeamMember,
 	getAllTeamMembers,
+	getTeamMember,
 } from "../controllers/team.controller.js";
 
 teamRouter.post("/signup", signup);
@@ -18,5 +19,6 @@ teamRouter.post("/add", addTeamMember);
 teamRouter.delete("/delete/:id", deleteTeamMember);
 teamRouter.put("/update/:id", editAndUpdateTeamMember);
 teamRouter.get("/all", getAllTeamMembers);
+teamRouter.get("/:id", getTeamMember);
 
 export default teamRouter;

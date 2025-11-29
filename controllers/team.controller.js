@@ -83,8 +83,8 @@ export async function login(req, res) {
 // team add, delete, update, get
 export async function addTeamMember(req, res) {
 	try {
-		const { firstName, lastName, email, password, role } = req.body;
-		if (!firstName || !lastName || !email || !password) {
+		const { username, email, designation } = req.body;
+		if (!username || !email || !designation) {
 			return res
 				.status(400)
 				.json({ message: "All fields are required", success: false });
@@ -98,15 +98,19 @@ export async function addTeamMember(req, res) {
 			});
 		}
 
+		const defaultFirstName = "John";
+		const defaultLastName = "Doe";
+		const defaultPassword = "hubly123";
+
 		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+		const hashedPassword = await bcrypt.hash(defaultPassword, salt);
 
 		const teamMember = new TeamMember({
-			firstName,
-			lastName,
+			firstName: defaultFirstName,
+			lastName: defaultLastName,
 			email,
 			password: hashedPassword,
-			role,
+			role: designation,
 		});
 
 		await teamMember.save();
@@ -137,7 +141,14 @@ export async function deleteTeamMember(req, res) {
 export async function editAndUpdateTeamMember(req, res) {
 	try {
 		const { id } = req.params;
-		const { firstName, lastName, email, password, role } = req.body;
+		const { firstName, lastName, email, password } = req.body;
+
+		let hashedPassword;
+
+		if (password) {
+			const salt = await bcrypt.genSalt(10);
+			hashedPassword = await bcrypt.hash(password, salt);
+		} else hashedPassword = password;
 
 		const updateTeamMember = await TeamMember.findByIdAndUpdate(
 			{ _id: id },
@@ -145,8 +156,7 @@ export async function editAndUpdateTeamMember(req, res) {
 				firstName,
 				lastName,
 				email,
-				password,
-				role,
+				password: hashedPassword,
 			},
 			{ new: true }
 		);
@@ -159,7 +169,6 @@ export async function editAndUpdateTeamMember(req, res) {
 		res.status(200).json({
 			message: "Team member updated successfully",
 			success: true,
-			updateTeamMember,
 		});
 	} catch (err) {
 		console.log(`Error in Edit and Update Team Member ${err}`);
@@ -173,6 +182,25 @@ export async function getAllTeamMembers(req, res) {
 		res.status(200).json({ teamMembers, success: true });
 	} catch (err) {
 		console.log(`Error in Get All Team Members ${err}`);
+		res.status(500).json({ message: "Internal server error", success: false });
+	}
+}
+
+export async function getTeamMember(req, res) {
+	try {
+		const { id } = req.params;
+
+		const teamMember = await TeamMember.findById(id).select("-password");
+
+		if (!teamMember) {
+			return res
+				.status(404)
+				.json({ message: "Team member not found", success: false });
+		}
+
+		res.status(200).json({ teamMember, success: true });
+	} catch (err) {
+		console.log(`Error in Get Team Member ${err}`);
 		res.status(500).json({ message: "Internal server error", success: false });
 	}
 }
