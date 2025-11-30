@@ -13,9 +13,10 @@ const BotSettingsSchema = new mongoose.Schema({
 		email: { type: String, default: "example@gmail.com" },
 	},
 	welcomeMessage: {
-		type: String,
-		default:
+		type: [String],
+		default: [
 			"Want to chat about Hubly? I'm an chatbot here to help you find your way.",
+		],
 	},
 	responseTimeLimit: { type: Number, default: 60 },
 });
