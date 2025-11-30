@@ -12,6 +12,11 @@ const userSchema = new mongoose.Schema(
 		},
 		mobile: { type: Number, required: true },
 		sessionToken: { type: String, unique: true, required: true },
+		status: {
+			type: String,
+			enum: ["unresolved", "resolved"],
+			default: "unresolved",
+		},
 	},
 	{ timestamps: true }
 );

@@ -93,3 +93,28 @@ export async function getUserBySession(req, res) {
 		res.status(500).json({ message: "Internal server error", success: false });
 	}
 }
+
+export async function resolveTicket(req, res) {
+	try {
+		const { userId } = req.params;
+
+		const user = await User.findByIdAndUpdate(
+			userId,
+			{ status: "resolved" },
+			{
+				new: true,
+			}
+		);
+
+		if (!user) {
+			return res
+				.status(404)
+				.json({ message: "User not found", success: false });
+		}
+
+		res.status(200).json({ message: "Ticket resolved", success: true, user });
+	} catch (err) {
+		console.log(`Error in Resolve Ticket ${err}`);
+		res.status(500).json({ message: "Internal server error", success: false });
+	}
+}
