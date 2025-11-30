@@ -19,13 +19,16 @@ export async function getBotSettings(req, res) {
 
 export async function updateBotSettings(req, res) {
 	try {
-		const { botSettings } = req.body;
-		const settings = await BotSettings.findOneAndUpdate(
+		const updates = req.body;
+
+		const updatedBotSettings = await BotSettings.findOneAndUpdate(
 			{},
-			{ $set: botSettings },
+			{ $set: updates },
 			{ new: true, upsert: true }
 		);
-		res.status(200).json({ settings, success: true });
+		return res
+			.status(200)
+			.json({ botSettings: updatedBotSettings, success: true });
 	} catch (err) {
 		console.log(`Error in Update Bot Settings ${err}`);
 		res.status(500).json({ message: "Internal server error", success: false });
