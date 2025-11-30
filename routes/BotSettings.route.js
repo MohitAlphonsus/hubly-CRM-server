@@ -7,6 +7,6 @@ import {
 } from "../controllers/botsettings.controller.js";
 
 botSettingsRouter.get("/settings", getBotSettings);
-botSettingsRouter.post("/settings", updateBotSettings);
+botSettingsRouter.put("/settings", updateBotSettings);
 
 export default botSettingsRouter;
